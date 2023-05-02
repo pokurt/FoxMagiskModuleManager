@@ -1,127 +1,40 @@
-# Contributor Covenant Code of Conduct
+# Welcome to Fox's Magisk Module Manager community
 
-## Our Pledge
+These guidelines set forth our expectations for our communities, not limiting but including our GitHub Repository, our Telegram groups, and other affiliated groups/communities. They really boil down to three principles:
 
-We as members, contributors, and leaders pledge to make participation in our
-community a harassment-free experience for everyone, regardless of age, body
-size, visible or invisible disability, ethnicity, sex characteristics, gender
-identity and expression, level of experience, education, socio-economic status,
-nationality, personal appearance, race, religion, or sexual identity
-and orientation.
+1) Don't be a dick.
+2) A dick do not be.
+3) Review rules 1 and 2.
 
-We pledge to act and interact in ways that contribute to an open, welcoming,
-diverse, inclusive, and healthy community.
+We believe in free speech, and freedom of expression, insofar that it doesn't interfere with others' right to the same. Contributors, community members, developers, and users alike are welcome here, but you must extend the same welcome to other members. So long as you can follow those three principles, you are welcome here, whether it's to hand out, lurk, or more directly contribute.
 
-## Our Standards
+## What we do not allow
 
-Examples of behavior that contributes to a positive environment for our
-community include:
+Absolutely no harrassment including, but not limited to, harassment based on the basis of sexuality, gender, race, or other beliefs shall be tolerated. We want everyone to feel safe and welcome here, and when some community members harass others, that is made much harder.
 
-* Demonstrating empathy and kindness toward other people
-* Being respectful of differing opinions, viewpoints, and experiences
-* Giving and gracefully accepting constructive feedback
-* Accepting responsibility and apologizing to those affected by our mistakes,
-  and learning from the experience
-* Focusing on what is best not just for us as individuals, but for the
-  overall community
+Harassment is defined as, as per the english dictionary:
+```
+noun: harassment; plural noun: harassments
+  aggressive pressure or intimidation.
+  "they face daily harassment and assault on the streets"
+```
 
-Examples of unacceptable behavior include:
+We will also not tolerate any illegal activity, including but not limited to, copyright infringement, license infringement, threats, violence, doxxing, or any activity not legal in any team member's or developers home country.
 
-* The use of sexualized language or imagery, and sexual attention or
-  advances of any kind
-* Trolling, insulting or derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or email
-  address, without their explicit permission
-* Other conduct which could reasonably be considered inappropriate in a
-  professional setting
+## What we do allow
 
-## Enforcement Responsibilities
+We believe free speech and discussions are vital to the health of a community. When everyone can speak freely, we all get along much better. Keep in mind, you must extend that same freedom to everyone else. That means to allow others to speak their mind just as you have, without attempting to stifle their same freedom of speech or expression.
 
-Community leaders are responsible for clarifying and enforcing our standards of
-acceptable behavior and will take appropriate and fair corrective action in
-response to any behavior that they deem inappropriate, threatening, offensive,
-or harmful.
+### Specifics for code contributions
 
-Community leaders have the right and responsibility to remove, edit, or reject
-comments, commits, code, wiki edits, issues, and other contributions that are
-not aligned to this Code of Conduct, and will communicate reasons for moderation
-decisions when appropriate.
-
-## Scope
-
-This Code of Conduct applies within all community spaces, and also applies when
-an individual is officially representing the community in public spaces.
-Examples of representing our community include using an official e-mail address,
-posting via an official social media account, or acting as an appointed
-representative at an online or offline event.
+All code submitted must follow existing code standards, including but not limited to, formatting, licensing, and code style. Code must also be the submitters own work or used under license, and the submitter must make a good faith effort to test and ensure it works correctly.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement in [the telegram group](https://t.me/Fox2Code_Chat).
-All complaints will be reviewed and investigated promptly and fairly.
+While the police will not show up at your house for violating our rules, we reserve the right but not the obligation to issue warnings and/or ban users as we see fit for violations of this Code of Conduct.
 
-All community leaders are obligated to respect the privacy and security of the
-reporter of any incident.
+You are welcome to contact any maintainer privately if you need help or wish to report another member of the community for violation of these rules, and your complaint will be handled fairly and privately.
 
-## Enforcement Guidelines
+By interacting with our community or participating in the same, you acknowledge you understand and accept this Code of Conduct.
 
-Community leaders will follow these Community Impact Guidelines in determining
-the consequences for any action they deem in violation of this Code of Conduct:
-
-### 1. Correction
-
-**Community Impact**: Use of inappropriate language or other behavior deemed
-unprofessional or unwelcome in the community.
-
-**Consequence**: A private, written warning from community leaders, providing
-clarity around the nature of the violation and an explanation of why the
-behavior was inappropriate. A public apology may be requested.
-
-### 2. Warning
-
-**Community Impact**: A violation through a single incident or series
-of actions.
-
-**Consequence**: A warning with consequences for continued behavior. No
-interaction with the people involved, including unsolicited interaction with
-those enforcing the Code of Conduct, for a specified period of time. This
-includes avoiding interactions in community spaces as well as external channels
-like social media. Violating these terms may lead to a temporary or
-permanent ban.
-
-### 3. Temporary Ban
-
-**Community Impact**: A serious violation of community standards, including
-sustained inappropriate behavior.
-
-**Consequence**: A temporary ban from any sort of interaction or public
-communication with the community for a specified period of time. No public or
-private interaction with the people involved, including unsolicited interaction
-with those enforcing the Code of Conduct, is allowed during this period.
-Violating these terms may lead to a permanent ban.
-
-### 4. Permanent Ban
-
-**Community Impact**: Demonstrating a pattern of violation of community
-standards, including sustained inappropriate behavior,  harassment of an
-individual, or aggression toward or disparagement of classes of individuals.
-
-**Consequence**: A permanent ban from any sort of public interaction within
-the community.
-
-## Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant][homepage],
-version 2.0, available at
-https://www.contributor-covenant.org/version/2/0/code_of_conduct.html.
-
-Community Impact Guidelines were inspired by [Mozilla's code of conduct
-enforcement ladder](https://github.com/mozilla/diversity).
-
-[homepage]: https://www.contributor-covenant.org
-
-For answers to common questions about this code of conduct, see the FAQ at
-https://www.contributor-covenant.org/faq. Translations are available at
-https://www.contributor-covenant.org/translations.
+<sub><b>Last modified:</b> May 16, 2022</sub>

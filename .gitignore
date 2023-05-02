@@ -4,7 +4,14 @@
 /.idea/
 .DS_Store
 /build
+/app/build
+/app/default
+/app/fdroid
+/app/play
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+sentry.properties
+androidacy.properties
+app/google-services.json

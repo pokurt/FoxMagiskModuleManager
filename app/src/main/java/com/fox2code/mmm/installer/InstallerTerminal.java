@@ -1,6 +1,7 @@
 package com.fox2code.mmm.installer;
 
 import android.graphics.Typeface;
+import android.text.Spannable;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -8,20 +9,28 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fox2code.androidansi.AnsiContext;
+
 import java.util.ArrayList;
 
 public class InstallerTerminal extends RecyclerView.Adapter<InstallerTerminal.TextViewHolder> {
     private final RecyclerView recyclerView;
-    private final ArrayList<String> terminal;
+    private final ArrayList<ProcessedLine> terminal;
+    private final AnsiContext ansiContext;
     private final Object lock = new Object();
     private final int foreground;
+    private final boolean mmtReborn;
+    private boolean ansiEnabled = false;
 
-    public InstallerTerminal(RecyclerView recyclerView,int foreground) {
+    public InstallerTerminal(RecyclerView recyclerView, boolean isLightTheme,
+                             int foreground, boolean mmtReborn) {
         recyclerView.setLayoutManager(
                 new LinearLayoutManager(recyclerView.getContext()));
         this.recyclerView = recyclerView;
         this.foreground = foreground;
+        this.mmtReborn = mmtReborn;
         this.terminal = new ArrayList<>();
+        this.ansiContext = (isLightTheme ? AnsiContext.LIGHT : AnsiContext.DARK).copy();
         this.recyclerView.setAdapter(this);
     }
 
@@ -33,7 +42,7 @@ public class InstallerTerminal extends RecyclerView.Adapter<InstallerTerminal.Te
 
     @Override
     public void onBindViewHolder(@NonNull TextViewHolder holder, int position) {
-        holder.setText(this.terminal.get(position));
+        this.terminal.get(position).setText(holder.textView);
     }
 
     @Override
@@ -45,16 +54,9 @@ public class InstallerTerminal extends RecyclerView.Adapter<InstallerTerminal.Te
         synchronized (lock) {
             boolean bottom = !this.recyclerView.canScrollVertically(1);
             int index = this.terminal.size();
-            this.terminal.add(line);
+            this.terminal.add(this.process(line));
             this.notifyItemInserted(index);
             if (bottom) this.recyclerView.scrollToPosition(index);
-        }
-    }
-
-    public void setLine(int index, String line) {
-        synchronized (lock) {
-            this.terminal.set(index, line);
-            this.notifyItemChanged(index);
         }
     }
 
@@ -62,10 +64,10 @@ public class InstallerTerminal extends RecyclerView.Adapter<InstallerTerminal.Te
         synchronized (lock) {
             int size = this.terminal.size();
             if (size == 0) {
-                this.terminal.add(line);
+                this.terminal.add(this.process(line));
                 this.notifyItemInserted(0);
             } else {
-                this.terminal.set(size - 1, line);
+                this.terminal.set(size - 1, this.process(line));
                 this.notifyItemChanged(size - 1);
             }
         }
@@ -75,10 +77,11 @@ public class InstallerTerminal extends RecyclerView.Adapter<InstallerTerminal.Te
         synchronized (lock) {
             int size = this.terminal.size();
             return size == 0 ? "" :
-                    this.terminal.get(size - 1);
+                    this.terminal.get(size - 1).line;
         }
     }
 
+    @SuppressWarnings("unused")
     public void removeLastLine() {
         synchronized (lock) {
             int size = this.terminal.size();
@@ -111,6 +114,32 @@ public class InstallerTerminal extends RecyclerView.Adapter<InstallerTerminal.Te
         }
     }
 
+    public void enableAnsi() {
+        this.ansiEnabled = true;
+    }
+
+    public void disableAnsi() {
+        this.ansiEnabled = false;
+        this.ansiContext.reset();
+    }
+
+    public boolean isAnsiEnabled() {
+        return this.ansiEnabled;
+    }
+
+    private ProcessedLine process(String line) {
+        if (line.isEmpty()) return new ProcessedLine(" ", null);
+        if (this.mmtReborn) {
+            if (line.startsWith("- ")) {
+                line = "[*] " + line.substring(2);
+            } else if (line.startsWith("! ")) {
+                line = "[!] " + line.substring(2);
+            }
+        }
+        return new ProcessedLine(line, this.ansiEnabled ?
+                this.ansiContext.parseAsSpannable(line) : null);
+    }
+
     public static class TextViewHolder extends RecyclerView.ViewHolder {
         private final TextView textView;
 
@@ -123,9 +152,21 @@ public class InstallerTerminal extends RecyclerView.Adapter<InstallerTerminal.Te
             itemView.setLines(1);
             itemView.setText(" ");
         }
+    }
 
-        private void setText(String text) {
-            this.textView.setText(text.isEmpty() ? " " : text);
+    @SuppressWarnings("ClassCanBeRecord")
+    private static class ProcessedLine {
+        public final String line;
+        public final Spannable spannable;
+
+        ProcessedLine(String line, Spannable spannable) {
+            this.line = line;
+            this.spannable = spannable;
+        }
+
+        public void setText(TextView textView) {
+            textView.setText(this.spannable == null ?
+                    this.line: this.spannable);
         }
     }
 }

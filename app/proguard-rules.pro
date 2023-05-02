@@ -8,9 +8,9 @@
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+-keepclassmembers class  com.fox2code.mmm.androidacy.AndroidacyWebAPI {
+   public *;
+}
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
@@ -50,7 +50,7 @@
     static void enableDebugLogging(boolean);
 }
 -assumevalues class androidx.loader.app.LoaderManagerImpl {
-    static boolean DEBUG return false;
+    static boolean DEBUG;
 }
 
 # This is just some proguard rules testes, might do a separate lib after
@@ -186,3 +186,42 @@
     int getSafeInsetTop();
     android.graphics.Insets getWaterfallInsets();
 }
+
+# Keep all of Cronet API and google's internal classes
+-keep class com.google.common.util.concurrent.** { *; }
+-keepclassmembers class kotlin.SafePublicationLazyImpl {
+    java.lang.Object _value;
+}
+
+# fix bug with androidx work and future
+-keep class androidx.work.impl.utils.futures.* { *; }
+
+# Silence some warnings
+-dontwarn android.os.SystemProperties
+-dontwarn android.view.ThreadedRenderer
+-dontwarn cyanogenmod.providers.CMSettings$Secure
+-dontwarn lineageos.providers.LineageSettings$System
+-dontwarn lineageos.style.StyleInterface
+-dontwarn me.weishu.reflection.Reflection
+-dontwarn org.lsposed.hiddenapibypass.HiddenApiBypass
+-dontwarn rikka.core.res.ResourcesCompatLayoutInflaterListener
+-dontwarn rikka.core.util.ResourceUtils
+-dontwarn com.afollestad.materialdialogs.MaterialDialog
+-dontwarn com.afollestad.materialdialogs.WhichButton
+-dontwarn com.afollestad.materialdialogs.actions.DialogActionExtKt
+-dontwarn com.afollestad.materialdialogs.callbacks.DialogCallbackExtKt
+-dontwarn com.afollestad.materialdialogs.internal.button.DialogActionButton
+-dontwarn com.afollestad.materialdialogs.internal.button.DialogActionButtonLayout
+-dontwarn com.afollestad.materialdialogs.internal.main.DialogLayout
+-dontwarn com.afollestad.materialdialogs.internal.main.DialogTitleLayout
+-dontwarn com.afollestad.materialdialogs.internal.message.DialogContentLayout
+-dontwarn com.oracle.svm.core.annotate.AutomaticFeature
+-dontwarn com.oracle.svm.core.annotate.Delete
+-dontwarn com.oracle.svm.core.annotate.Substitute
+-dontwarn com.oracle.svm.core.annotate.TargetClass
+-dontwarn com.oracle.svm.core.configure.ResourcesRegistry
+-dontwarn javax.lang.model.element.Modifier
+-dontwarn org.graalvm.nativeimage.ImageSingletons
+-dontwarn org.graalvm.nativeimage.hosted.Feature$BeforeAnalysisAccess
+-dontwarn org.graalvm.nativeimage.hosted.Feature
+-dontwarn io.sentry.compose.gestures.ComposeGestureTargetLocator

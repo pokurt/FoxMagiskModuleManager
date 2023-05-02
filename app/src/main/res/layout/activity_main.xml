@@ -5,82 +5,103 @@
     android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:fitsSystemWindowsInsets="left|right"
+    android:padding="4dp"
+    app:layout_constraintTop_toTopOf="parent"
     tools:context=".MainActivity">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" >
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/module_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:overScrollMode="never"
-            app:edgeToEdge="true" />
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <eightbitlab.com.blurview.BlurView
-        android:id="@+id/action_bar_blur"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-        <TextView
-            android:id="@+id/action_bar_padding"
+        <!-- FrameLayout is the best way to fix blurring -->
+        <FrameLayout
+            android:id="@+id/blur_frame"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </eightbitlab.com.blurview.BlurView>
+            android:layout_height="match_parent"
+            android:paddingBottom="84dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/module_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+                <!-- online modules -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/module_list_online"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress_bar"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:indeterminate="true"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/action_bar_blur" />
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/root_container"
+        app:showAnimationBehavior="outward" />
 
     <LinearLayout
         android:id="@+id/search_container"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:gravity="right"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_fitsSystemWindowsInsets="bottom"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginVertical="8dp"
+        android:filterTouchesWhenObscured="true"
+        android:gravity="bottom|end"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="RtlHardcoded">
         <!--
         setting high app:cardCornerRadius is not supported on some versions
         so we must use code to get a round appearance.
         -->
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/search_card"
-            android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:shape="ring"
             android:background="@null"
+            android:shape="ring"
+            android:visibility="visible"
             app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="0dp"
             app:cardPreventCornerOverlap="true"
             app:strokeColor="@android:color/transparent"
-            app:cardElevation="0dp"
             app:strokeWidth="0dp">
+
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/search_bar"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@null" />
+                android:background="@null"
+                android:padding="2dp"
+                android:visibility="visible"
+                app:iconifiedByDefault="true"
+                app:useDrawerArrowDrawable="true" />
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
+    <!-- bottom md3 navigation bar -->
+    <!-- used for local and remote module list -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="0dp"
+        android:visibility="visible"
+        app:compatShadowEnabled="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

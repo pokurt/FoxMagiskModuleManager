@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Share folder under internal cache folder. The base folder is context.getCacheDir() -->
+    <cache-path name="internal_cache" path="/" />
+    <!-- external storage -->
+    <external-path name="external_files" path="." />
+</paths>

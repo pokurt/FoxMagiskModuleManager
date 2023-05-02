@@ -1,96 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.fox2code.mmm"
-    tools:ignore="QueryAllPackagesPermission">
+    tools:ignore="QueryAllPackagesPermission"
+    tools:targetApi="tiramisu">
 
+    <uses-sdk tools:overrideLibrary="io.sentry.android" />
+
+    <queries>
+        <intent>
+            <action android:name="com.fox2code.mmm.utils.intent.action.OPEN_EXTERNAL" />
+        </intent>
+    </queries>
     <!-- Wifi is not the only way to get an internet connection -->
-    <uses-feature android:name="android.hardware.wifi" android:required="false" />
-
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+    <!-- uses webview -->
+    <uses-feature
+        android:name="android.software.webview"
+        android:required="true" />
+    <!-- uses opengl 1.2 -->
+    <uses-feature
+        android:name="android.hardware.opengles.aep"
+        android:required="false" />
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="false" />
     <!-- Retrieve online modules -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- WebView offline webpage support -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Make sure of the module active state by checking enabled modules on boot -->
+    <!-- Check if there is modules updates on boot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Open config apps for applications -->
     <uses-permission-sdk-23 android:name="android.permission.QUERY_ALL_PACKAGES" />
-    <!-- Supposed to fix bugs with old firmware, only requested on pre Marshmallow -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="22" />
+    <!-- Open and read zips -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Write to external storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Post background notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Install updates -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Foreground service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- wake lock -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".MainApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
+        android:hardwareAccelerated="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
+        android:fullBackupContent="@xml/full_backup_content"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="@bool/lang_support_rtl"
         android:testOnly="false"
+        android:appCategory="productivity"
+        android:memtagMode="async"
         android:theme="@style/Theme.MagiskModuleManager"
-        android:fullBackupContent="@xml/full_backup_content"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:usesCleartextTraffic="false"
-        tools:targetApi="s">
-        <receiver android:name="com.fox2code.mmm.manager.ModuleBootReceive"
+        android:forceDarkAllowed="false"
+        tools:ignore="ManifestResource"
+        tools:replace="android:supportsRtl"
+        tools:targetApi="tiramisu">
+        <activity
+            android:name=".UpdateActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MagiskModuleManager.NoActionBar" />
+        <activity
+            android:name=".CrashHandler"
+            android:exported="false"
+            android:process=":crash"
+            android:theme="@style/Theme.MagiskModuleManager.NoActionBar" />
+        <activity
+            android:name=".SetupActivity"
+            android:exported="false"
+            android:label="@string/title_activity_setup"
+            android:theme="@style/Theme.MagiskModuleManager.NoActionBar" />
+
+        <receiver
+            android:name=".background.BackgroundBootListener"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
         <activity
             android:name=".settings.SettingsActivity"
-            android:parentActivityName=".MainActivity"
             android:exported="true"
-            android:label="@string/title_activity_settings">
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:label="@string/app_name_short"
             android:launchMode="singleTask"
-            android:label="@string/app_name_short">
+            android:theme="@style/Theme.MagiskModuleManager.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".installer.InstallerActivity"
-            android:parentActivityName=".MainActivity"
             android:exported="false"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
+
+            <!--
             <intent-filter>
                 <action android:name="${applicationId}.intent.action.INSTALL_MODULE_INTERNAL" />
             </intent-filter>
+            -->
         </activity>
+
+        <!-- We can handle zip files -->
+        <activity
+            android:name=".utils.ZipFileOpener"
+            android:exported="true"
+            android:theme="@style/Theme.MagiskModuleManager.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="application/zip" />
+                <data android:mimeType="application/x-zip-compressed" />
+                <data android:scheme="content" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".markdown.MarkdownActivity"
-            android:parentActivityName=".MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.MagiskModuleManager">
-        </activity>
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.MagiskModuleManager.NoActionBar" />
+
         <activity
             android:name=".androidacy.AndroidacyActivity"
-            android:parentActivityName=".MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.MagiskModuleManager">
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.MagiskModuleManager.NoActionBar" >
+
+            <!--
             <intent-filter>
                 <action android:name="${applicationId}.intent.action.OPEN_ANDROIDACY_INTERNAL" />
             </intent-filter>
+            -->
         </activity>
-        <activity android:name="com.mikepenz.aboutlibraries.ui.LibsActivity"
-            tools:node="remove"/>
+
+        <activity
+            android:name="com.mikepenz.aboutlibraries.ui.LibsActivity"
+            tools:node="remove" />
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="merge">
-            <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer"
+            <meta-data
+                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+                tools:node="remove" />
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
                 tools:node="remove" />
         </provider>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.file-provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/shared_file_paths" />
+        </provider>
+
+        <meta-data
+            android:name="io.sentry.auto-init"
+            android:value="false" />
+        <meta-data
+            android:name="io.sentry.dsn"
+            android:value="https://f35f7f369a254b2ca854cf9593c99da2@sentry.androidacy.com/7" />
+        <!-- Sane value, but feel free to lower it -->
+        <meta-data
+            android:name="io.sentry.traces.sample-rate"
+            android:value="0.25" />
+        <!-- Doesn't actually monitor anything, just used to get the activities the user went through -->
+        <meta-data
+            android:name="io.sentry.traces.user-interaction.enable"
+            android:value="true" />
+        <!-- Just a screenshot of ONLY the current activity at the time of the crash -->
+        <meta-data
+            android:name="io.sentry.attach-screenshot"
+            android:value="true" />
+        <!-- Just the current activity at the time of the crash -->
+        <meta-data
+            android:name="io.sentry.attach-stacktrace"
+            android:value="true" />
+        <!-- Performance profiling -->
+        <meta-data
+            android:name="io.sentry.traces.profiling.sample-rate"
+            android:value="0.25" />
     </application>
+
 </manifest>

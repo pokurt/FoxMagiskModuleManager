@@ -1,15 +1,16 @@
 package com.fox2code.mmm.manager;
 
-import android.util.Log;
-
+import com.fox2code.mmm.markdown.MarkdownUrlLinker;
 import com.fox2code.mmm.utils.FastException;
-import com.fox2code.mmm.utils.Http;
-import com.fox2code.mmm.utils.PropUtils;
+import com.fox2code.mmm.utils.io.net.Http;
+import com.fox2code.mmm.utils.io.PropUtils;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
+import timber.log.Timber;
 
 public class LocalModuleInfo extends ModuleInfo {
     public String updateVersion;
@@ -24,7 +25,7 @@ public class LocalModuleInfo extends ModuleInfo {
     }
 
     public void checkModuleUpdate() {
-        if (this.updateJson != null) {
+        if (this.updateJson != null && (this.flags & FLAG_MM_REMOTE_MODULE) == 0) {
             try {
                 JSONObject jsonUpdate = new JSONObject(new String(Http.doHttpGet(
                         this.updateJson, true), StandardCharsets.UTF_8));
@@ -47,15 +48,15 @@ public class LocalModuleInfo extends ModuleInfo {
                 this.updateVersion = PropUtils.shortenVersionName(
                         this.updateVersion.trim(), this.updateVersionCode);
                 if (this.updateChangeLog.length() > 1000)
-                    this.updateChangeLog = this.updateChangeLog.substring(0, 1000);
+                    this.updateChangeLog = this.updateChangeLog.substring(1000);
+                this.updateChangeLog = MarkdownUrlLinker.urlLinkify(this.updateChangeLog);
             } catch (Exception e) {
                 this.updateVersion = null;
                 this.updateVersionCode = Long.MIN_VALUE;
                 this.updateZipUrl = null;
                 this.updateChangeLog = "";
                 this.updateChecksum = null;
-                Log.w("LocalModuleInfo",
-                        "Failed update checking for module: " + this.id, e);
+                Timber.w(e, "Failed update checking for module: %s", this.id);
             }
         }
     }

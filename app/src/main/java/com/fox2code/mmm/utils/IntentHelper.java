@@ -3,7 +3,6 @@ package com.fox2code.mmm.utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -11,26 +10,25 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.app.BundleCompat;
 
+import com.fox2code.foxcompat.app.FoxActivity;
 import com.fox2code.mmm.BuildConfig;
 import com.fox2code.mmm.Constants;
 import com.fox2code.mmm.MainApplication;
 import com.fox2code.mmm.R;
 import com.fox2code.mmm.XHooks;
 import com.fox2code.mmm.androidacy.AndroidacyActivity;
-import com.fox2code.mmm.compat.CompatActivity;
 import com.fox2code.mmm.installer.InstallerActivity;
 import com.fox2code.mmm.markdown.MarkdownActivity;
+import com.fox2code.mmm.utils.io.Files;
+import com.fox2code.mmm.utils.io.net.Http;
 import com.topjohnwu.superuser.CallbackList;
 import com.topjohnwu.superuser.Shell;
-import com.topjohnwu.superuser.ShellUtils;
-import com.topjohnwu.superuser.internal.Utils;
 import com.topjohnwu.superuser.io.SuFileInputStream;
 
 import java.io.File;
@@ -38,11 +36,11 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
-public class IntentHelper {
-    private static final String TAG = "IntentHelper";
+import timber.log.Timber;
+
+public enum IntentHelper {
+    ;
     private static final String EXTRA_TAB_SESSION =
             "android.support.customtabs.extra.SESSION";
     private static final String EXTRA_TAB_COLOR_SCHEME =
@@ -53,13 +51,14 @@ public class IntentHelper {
             "android.support.customtabs.extra.TOOLBAR_COLOR";
     private static final String EXTRA_TAB_EXIT_ANIMATION_BUNDLE =
             "android.support.customtabs.extra.EXIT_ANIMATION_BUNDLE";
+    static final int FLAG_GRANT_URI_PERMISSION = Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
     public static void openUri(Context context, String uri) {
         if (uri.startsWith("intent://")) {
             try {
                 startActivity(context, Intent.parseUri(uri, Intent.URI_INTENT_SCHEME), false);
             } catch (URISyntaxException | ActivityNotFoundException e) {
-                Log.e(TAG, "Failed launch of " + uri, e);
+                Timber.e(e);
             }
         } else openUrl(context, uri);
     }
@@ -69,31 +68,34 @@ public class IntentHelper {
     }
 
     public static void openUrl(Context context, String url, boolean forceBrowser) {
+        Timber.d("Opening url: %s, forced browser %b", url, forceBrowser);
         try {
             Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            myIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            myIntent.setFlags(FLAG_GRANT_URI_PERMISSION);
             if (forceBrowser) {
                 myIntent.addCategory(Intent.CATEGORY_BROWSABLE);
             }
             startActivity(context, myIntent, false);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(context, "No application can handle this request.\n"
-                    + " Please install a web-browser", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
+            Timber.d(e, "Could not find suitable activity to handle url");
+            Toast.makeText(context, FoxActivity.getFoxActivity(context).getString(
+                    R.string.no_browser), Toast.LENGTH_LONG).show();
         }
     }
 
     public static void openCustomTab(Context context, String url) {
+        Timber.d("Opening url: %s in custom tab", url);
         try {
             Intent viewIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            viewIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            viewIntent.setFlags(FLAG_GRANT_URI_PERMISSION);
             Intent tabIntent = new Intent(viewIntent);
+            tabIntent.setFlags(FLAG_GRANT_URI_PERMISSION);
             tabIntent.addCategory(Intent.CATEGORY_BROWSABLE);
             startActivityEx(context, tabIntent, viewIntent);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(context, "No application can handle this request.\n"
-                    + " Please install a web-browser", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
+            Timber.d(e, "Could not find suitable activity to handle url");
+            Toast.makeText(context, FoxActivity.getFoxActivity(context).getString(
+                    R.string.no_browser), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -103,6 +105,11 @@ public class IntentHelper {
 
     public static void openUrlAndroidacy(Context context, String url, boolean allowInstall,
                                          String title,String config) {
+        if (!Http.hasWebView()) {
+            Timber.w("Using custom tab for: %s", url);
+            openCustomTab(context, url);
+            return;
+        }
         Uri uri = Uri.parse(url);
         try {
             Intent myIntent = new Intent(
@@ -118,7 +125,6 @@ public class IntentHelper {
         } catch (ActivityNotFoundException e) {
             Toast.makeText(context, "No application can handle this request."
                     + " Please install a web-browser",  Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
         }
     }
 
@@ -144,10 +150,10 @@ public class IntentHelper {
                             "am start -a android.intent.action.MAIN " +
                                     "-c org.lsposed.manager.LAUNCH_MANAGER " +
                                     "com.android.shell/.BugreportWarningActivity")
-                            .to(new CallbackList<String>() {
+                            .to(new CallbackList<>() {
                                 @Override
                                 public void onAddElement(String str) {
-                                    Log.d(TAG, "LSPosed: " + str);
+                                    Timber.i("LSPosed: %s", str);
                                 }
                             }).submit();
                     return;
@@ -160,33 +166,36 @@ public class IntentHelper {
         } catch (ActivityNotFoundException e) {
             Toast.makeText(context,
                     "Failed to launch module config activity",  Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
         }
     }
 
-    public static void openMarkdown(Context context, String url, String title, String config) {
+    public static void openMarkdown(Context context, String url, String title, String config, Boolean changeBoot, Boolean needsRamdisk,int minMagisk, int minApi, int maxApi) {
         try {
             Intent intent = new Intent(context, MarkdownActivity.class);
             MainApplication.addSecret(intent);
             intent.putExtra(Constants.EXTRA_MARKDOWN_URL, url);
             intent.putExtra(Constants.EXTRA_MARKDOWN_TITLE, title);
+            intent.putExtra(Constants.EXTRA_MARKDOWN_CHANGE_BOOT, changeBoot);
+            intent.putExtra(Constants.EXTRA_MARKDOWN_NEEDS_RAMDISK, needsRamdisk);
+            intent.putExtra(Constants.EXTRA_MARKDOWN_MIN_MAGISK, minMagisk);
+            intent.putExtra(Constants.EXTRA_MARKDOWN_MIN_API, minApi);
+            intent.putExtra(Constants.EXTRA_MARKDOWN_MAX_API, maxApi);
             if (config != null && !config.isEmpty())
                 intent.putExtra(Constants.EXTRA_MARKDOWN_CONFIG, config);
             startActivity(context, intent, true);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(context,
                     "Failed to launch markdown activity",  Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
         }
     }
 
-    public static void openInstaller(Context context, String url, String title,
-                                     String config, String checksum) {
-        openInstaller(context, url, title, config, checksum, false);
+    public static void openInstaller(Context context, String url, String title, String config,
+                                       String checksum, boolean mmtReborn) {
+        openInstaller(context, url, title, config, checksum, mmtReborn, false);
     }
 
     public static void openInstaller(Context context, String url, String title, String config,
-                                       String checksum,boolean testDebug) {
+                                     String checksum, boolean mmtReborn, boolean testDebug) {
         try {
             Intent intent = new Intent(context, InstallerActivity.class);
             intent.setAction(Constants.INTENT_INSTALL_INTERNAL);
@@ -197,22 +206,15 @@ public class IntentHelper {
                 intent.putExtra(Constants.EXTRA_INSTALL_CONFIG, config);
             if (checksum != null && !checksum.isEmpty())
                 intent.putExtra(Constants.EXTRA_INSTALL_CHECKSUM, checksum);
+            if (mmtReborn) // Allow early styling of install process
+                intent.putExtra(Constants.EXTRA_INSTALL_MMT_REBORN, true);
             if (testDebug && BuildConfig.DEBUG)
                 intent.putExtra(Constants.EXTRA_INSTALL_TEST_ROOTLESS, true);
             startActivity(context, intent, true);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(context,
                     "Failed to launch markdown activity",  Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
         }
-    }
-
-    public static void startActivity(Context context, Intent intent) {
-        ComponentName componentName = intent.getComponent();
-        String packageName = context.getPackageName();
-        startActivity(context, intent, packageName.equals(intent.getPackage()) ||
-                        (componentName != null &&
-                                packageName.equals(componentName.getPackageName())));
     }
 
     public static void startActivity(Context context, Class<? extends Activity> activityClass) {
@@ -257,7 +259,7 @@ public class IntentHelper {
                         intent1.putExtras(bundle);
                     }
                     intent1.putExtra(IntentHelper.EXTRA_TAB_EXIT_ANIMATION_BUNDLE, param);
-                    if (activity instanceof CompatActivity) {
+                    if (activity instanceof FoxActivity) {
                         TypedValue typedValue = new TypedValue();
                         activity.getTheme().resolveAttribute(
                                 android.R.attr.background, typedValue, true);
@@ -265,7 +267,7 @@ public class IntentHelper {
                                 typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
                             intent1.putExtra(IntentHelper.EXTRA_TAB_TOOLBAR_COLOR, typedValue.data);
                             intent1.putExtra(IntentHelper.EXTRA_TAB_COLOR_SCHEME,
-                                    ((CompatActivity) activity).isLightTheme() ?
+                                    ((FoxActivity) activity).isLightTheme() ?
                                     IntentHelper.EXTRA_TAB_COLOR_SCHEME_LIGHT :
                                     IntentHelper.EXTRA_TAB_COLOR_SCHEME_DARK);
                         }
@@ -314,11 +316,11 @@ public class IntentHelper {
     public static final int RESPONSE_URL = 2;
 
     @SuppressLint("SdCardPath")
-    public static void openFileTo(CompatActivity compatActivity, File destination,
+    public static void openFileTo(FoxActivity compatActivity, File destination,
                                   OnFileReceivedCallback callback) {
         File destinationFolder;
         if (destination == null || (destinationFolder = destination.getParentFile()) == null ||
-                (!destinationFolder.isDirectory() && !destinationFolder.mkdirs())) {
+                (!destinationFolder.mkdirs() && !destinationFolder.isDirectory())) {
             callback.onReceived(destination, null, RESPONSE_ERROR);
             return;
         }
@@ -340,7 +342,7 @@ public class IntentHelper {
                 callback.onReceived(destination, null, RESPONSE_ERROR);
                 return;
             }
-            Log.d(TAG, "FilePicker returned " + uri);
+            Timber.i("FilePicker returned %s", uri);
             if ("http".equals(uri.getScheme()) ||
                     "https".equals(uri.getScheme())) {
                 callback.onReceived(destination, uri, RESPONSE_URL);
@@ -370,9 +372,10 @@ public class IntentHelper {
                 }
                 outputStream = new FileOutputStream(destination);
                 Files.copy(inputStream, outputStream);
+                Timber.i("File saved at %s", destination);
                 success = true;
             } catch (Exception e) {
-                Log.e(TAG, "failed copy of " + uri, e);
+                Timber.e(e);
                 Toast.makeText(compatActivity,
                         R.string.file_picker_failure,
                         Toast.LENGTH_SHORT).show();
@@ -380,7 +383,7 @@ public class IntentHelper {
                 Files.closeSilently(inputStream);
                 Files.closeSilently(outputStream);
                 if (!success && destination.exists() && !destination.delete())
-                    Log.e(TAG, "Failed to delete artefact!");
+                    Timber.e("Failed to delete artefact!");
             }
             callback.onReceived(destination, uri, success ? RESPONSE_FILE : RESPONSE_ERROR);
         });
